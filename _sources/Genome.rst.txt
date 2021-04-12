@@ -1,0 +1,97 @@
+=============================================
+Genome analysis of Endozoicomonas species
+=============================================
+
+---------------------------------
+Genome assembly of OTU5
+---------------------------------
+
+Preprocessing
+---------------------------------
+
+.. code-block:: bash
+
+---------------------------------
+Gene annotation
+---------------------------------
+
+Gene prediction
+---------------------------------
+CDS regions were predicted from the genome sequences by Prokka. 
+
+.. code-block:: bash
+
+KAAS
+---------------------------------
+Gene annotation with KEGG database was performed by KEGG Automatic Annotation Server (https://www.genome.jp/tools/kaas/).
+
+NCBI nr
+---------------------------------
+Similarity search against NCBI nr was performed to identify taxonomy of the most similar sequences
+
+1. **Preparation of DB**
+   
+   .. code-block:: bash
+
+      git clone https://github.com/tmaruy/blast2taxonomy.git
+      chmod +x preprare_taxdb.sh
+      ./prepare_taxdb.sh
+
+2. **Similarity search with Diamond**
+
+   .. code-block:: bash
+
+      diamond blastx \
+         -q ${input} \
+         -d ${db} \
+         -o ${input}.nr_diamond.txt \
+         -f 6 \
+         -p 8
+
+3. **Parse results**
+   
+   .. code-block:: bash
+
+      python parse_nr.py \
+         -i ${input}.nr_diamond.txt \
+         -o ${input}.nr_diamond.parse.txt \
+         -threshold 1e-5
+
+---------------------------------
+Comparative genome analysis
+---------------------------------
+
+Orthogroup identification
+---------------------------------
+Orthologous gene groups were determined by OrthoFinder2
+
+.. code-block:: bash
+
+   orthofinder \
+      -f ${faa_dir} \ # Directory including Protein amino acid FASTA files
+      -t 16 \
+      -a 3
+
+Genome alignment
+---------------------------------
+Genome alignment was performed by progressiveMauve
+
+.. code-block:: bash
+
+   progressiveMauve \
+      --output=progressiveMauve.all.xmfa \
+      ${indir}/Endozoicomonas_acroporae_Acr-14.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_arenosclerae_ab112.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_ascidiicola_AVMART05.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_ascidiicola_KASP37.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_atrinae_WP70.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_culture.decontamination.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_elysicola_DSM_22380.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_montiporae_CL-33.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_montiporae_LMG_24815.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_numazuensis_DSM_25634.fasta_prokka.fna \
+      ${indir}/Endozoicomonas_sp_OPT23.fasta_prokka.fna 
+
+---------------------------------
+Downstream analysis
+---------------------------------

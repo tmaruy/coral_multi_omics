@@ -1,0 +1,355 @@
+===============================================
+Transcriptome analysis of coral & zooxanthellae
+===============================================
+
+---------------------------------
+Data preprocessing
+---------------------------------
+
+Quality check
+---------------------------------
+
+Quality check was performed by FASTQC.
+
+.. code-block:: bash
+
+   fastqc -o ${outdir} ${outdir}/${prefix}_R1.fastq
+   fastqc -o ${outdir} ${outdir}/${prefix}_R2.fastq
+
+Preprocessing 
+---------------------------------
+
+FASTQ files were preprocessed by bbduk in BBtools.
+
+.. code-block:: bash
+
+   bbduk -Xmx1g \
+      in1=${indir}/${prefix}_R1.fastq \
+      in2=${indir}/${prefix}_R2.fastq \
+      out1=${outdir}/${prefix}_R1.fastq \
+      out2=${outdir}/${prefix}_R2.fastq \
+      ref=${adapter} \
+      ktrim=r \ # Trim adapter from 3' end (as usual adapter trimming
+      k=23 \ # k-mer size to use
+      mink=11 \ # Minimum match size
+      hdist=1 \ # Hamming distance: Allows 1 mismatch
+      tpe \ # Trim adapters based on pair overlap detection using BBMerge
+      tbo \ # Trim both reads to the same length
+      qtrim=rl trimq=10 \ # Remove low-quality bases (QC<10) from both sides
+      maq=10 # Remove low-quality reads (average QC < 20)
+
+
+----------------------------------
+Transcriptome profiling of corals
+----------------------------------
+
+Mapping to coral genome
+----------------------------------
+Sequence reads were mapped onto reference genome of Acropora tenuis by HISAT2.
+
+.. code-block:: bash
+
+   hisat2 \
+      -x ${reference} \ # Index generated from reference genome
+      -1 ${directory_preprocessed_fastq}/${prefix}_R1.fastq \ # Input: Read 1
+      -2 ${directory_preprocessed_fastq}/${prefix}_R2.fastq \ # Input: Read 2
+      -p 1 \ # Thread number
+      -S ${directory_mapping}/${prefix}.Acropora_tenuis_UT.sam \ # Output: SAM format
+      --un-conc ${directory_mapping}/${prefix}.Acropora_tenuis_UT.unmapped.R%.fastq # Output: unmapped reads, used for transcriptome assembly in following section
+      --dta # This option is required for StringTie
+
+Transcript assembly 
+----------------------------------
+Mapping results were used for transcriptome assembly by StringTie. 
+
+.. code-block:: bash
+
+   # convert to BAM and sort, necessary for StringTie
+   samtools sort \
+      -O bam \
+      -o ${directory_mapping}/${prefix}.Acropora_tenuis_UT.bam \
+      ${directory_mapping}/${prefix}.Acropora_tenuis_UT.sam
+   rm ${directory_mapping}/${prefix}.Acropora_tenuis_UT.sam
+
+   # StringTie and create new GTF file
+   stringtie \
+      ${directory_mapping}/${prefix}.Acropora_tenuis_UT.bam \
+      -G ${gtf_file} \
+      -A ${directory_mapping}/${prefix}.Acropora_tenuis_UT.StringTie.tab \
+      -o ${directory_mapping}/${prefix}.Acropora_tenuis_UT.StringTie.gtf
+
+Merge GTF files
+----------------------------------
+The above step generates GTF files for all samples. This step merges all files and create one representative file.
+
+.. code-block:: bash
+
+   # Create list of GFF
+   ls ${directory_mapping}/*gtf > ${merged_gtf_file}
+
+   # Merge GTF files
+   stringtie --merge \
+      -p 1 \ # Thread
+      -G ${merged_gtf_file} \ # List of GTF files
+      -o ${directory_mapping}/stringtie_mergelist.txt # Output
+
+Calculate expression level
+----------------------------------
+Gene expression levels were estimated with the merged GTF file by StringTie.
+
+.. code-block:: bash
+
+   # FPKM and TPM
+   stringtie \ 
+      ${outdir}/${prefix}.Acropora_tenuis_UT.bam \
+      -e -G ${merged_gtf_file} \
+      -A ${directory_mapping}/${prefix}.Acropora_tenuis_UT.StringTie.Merged.tab
+      -o ${directory_mapping}/${prefix}.Acropora_tenuis_UT.StringTie.Merged.gtf
+
+   # Count table
+   prepDE.py \
+      -i list.gtf.UT \
+      -g Acropora_tenuis_UT.HISAT2.StringTie.Count.txt 
+
+----------------------------------------------
+Transcriptome profiling of zooxanthellae  
+----------------------------------------------
+
+Random sampling of unmapped reads
+----------------------------------------------
+From unmapped reads of each sample in section `1. Mapping to coral genome`, 1 million reads were randomly selected by seqtk.
+
+.. code-block:: bash
+   
+   seqtk sample -s100 ${indir}/${prefix}.Acropora_tenuis_UT.unmapped.R1.fastq.gz 1000000 > ${indir2}/${prefix}.Acropora_tenuis_UT.unmapped.R1.fastq
+   seqtk sample -s100 ${indir}/${prefix}.Acropora_tenuis_UT.unmapped.R2.fastq.gz 1000000 > ${indir2}/${prefix}.Acropora_tenuis_UT.unmapped.R2.fastq
+
+De novo transcriptome assembly
+----------------------------------------------
+De novo transcriptome assembly was performed by rnaSPAdes.
+
+.. code-block:: bash
+
+   rnaspades \
+      -o ${output} \ # Output folder
+      -t 8 \ # Thread
+      -m 128 \ # Memory required
+      --dataset rnaSPAdes.sample_file.CREST_v1.1Mreads.UT.yaml # Input file list
+
+Selection of zooxanthellae transcripts
+----------------------------------------------
+Select contigs derived from zooxanthellae by similarity search against protein sequences of coral & zooxanthellae.
+
+.. code-block:: bash
+
+   blastx \
+      -query ${output}/transcripts.fasta \
+      -db ${db} \
+      -out ${input}.Coral_Zooxanthellae_Classify.txt -outfmt 6 -num_threads 10
+
+
+Mapping on the contigs
+----------------------------------------------
+Mapping of the unmapped reads on the contigs was performed by Salmon.
+
+.. code-block:: bash
+
+   salmon quant \
+      --index ${reference} \ # Index file created from ${output}/transcripts.zooxanthellae.fasta
+      --libType IU \
+      --dumpEq \
+      -1 ${indir2}/${prefix}.Acropora_tenuis_UT.unmapped.R1.fastq \ 
+      -2 ${indir2}/${prefix}.Acropora_tenuis_UT.unmapped.R2.fastq \ 
+      --output ${outdir}/${prefix}.salmon
+
+Contig clustering
+----------------------------------------------
+Re-clusteirng of contigs were performed by Corset.
+
+.. code-block:: bash
+
+   corset \
+      -f true \
+      -i salmon_eq_classes \
+      -p corset_salmon \
+      -g 1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9,10,10,10,11,11,11,12,12,12,13,13,13,14,14,14,15,15,15,16,16,16,17,17,17,18,18,18,19,19,19,20,20,20,21,21,21 \
+      -n 201411_Is1,201411_Is2,201411_Is3,201411_Ky1,201411_Ky2,201411_Ky3,201411_Mi1,201411_Mi2,201411_Mi3,201502_Is1,201502_Is2,201502_Is3,201502_Ky1,201502_Ky2,201502_Ky3,201502_Mi1,201502_Mi2,201502_Mi3,201505_Is1,201505_Is2,201505_Is3,201505_Mi1,201505_Mi2,201505_Mi3,201508_Is1,201508_Is2,201508_Is3,201508_Mi1,201508_Mi2,201508_Mi3,201511_Is1,201511_Is2,201511_Is3,201511_Mi1,201511_Mi2,201511_Mi3,201602_Is1,201602_Is2,201602_Is3,201602_Mi1,201602_Mi2,201602_Mi3,201603_Is1,201603_Is2,201603_Is3,201603_Mi1,201603_Mi2,201603_Mi3,201605_Is1,201605_Is2,201605_Is3,201605_Mi1,201605_Mi2,201605_Mi3,201608_Is1,201608_Is2,201608_Is3,201608_Mi1,201608_Mi2,201608_Mi3,201609_Is1,201609_Is2,201609_Is3 \
+      201411_Is1.salmon/aux_info/eq_classes.txt 201411_Is2.salmon/aux_info/eq_classes.txt 201411_Is3.salmon/aux_info/eq_classes.txt 201411_Ky1.salmon/aux_info/eq_classes.txt 201411_Ky2.salmon/aux_info/eq_classes.txt 201411_Ky3.salmon/aux_info/eq_classes.txt 201411_Mi1.salmon/aux_info/eq_classes.txt 201411_Mi2.salmon/aux_info/eq_classes.txt 201411_Mi3.salmon/aux_info/eq_classes.txt 201502_Is1.salmon/aux_info/eq_classes.txt 201502_Is2.salmon/aux_info/eq_classes.txt 201502_Is3.salmon/aux_info/eq_classes.txt 201502_Ky1.salmon/aux_info/eq_classes.txt 201502_Ky2.salmon/aux_info/eq_classes.txt 201502_Ky3.salmon/aux_info/eq_classes.txt 201502_Mi1.salmon/aux_info/eq_classes.txt 201502_Mi2.salmon/aux_info/eq_classes.txt 201502_Mi3.salmon/aux_info/eq_classes.txt 201505_Is1.salmon/aux_info/eq_classes.txt 201505_Is2.salmon/aux_info/eq_classes.txt 201505_Is3.salmon/aux_info/eq_classes.txt 201505_Mi1.salmon/aux_info/eq_classes.txt 201505_Mi2.salmon/aux_info/eq_classes.txt 201505_Mi3.salmon/aux_info/eq_classes.txt 201508_Is1.salmon/aux_info/eq_classes.txt 201508_Is2.salmon/aux_info/eq_classes.txt 201508_Is3.salmon/aux_info/eq_classes.txt 201508_Mi1.salmon/aux_info/eq_classes.txt 201508_Mi2.salmon/aux_info/eq_classes.txt 201508_Mi3.salmon/aux_info/eq_classes.txt 201511_Is1.salmon/aux_info/eq_classes.txt 201511_Is2.salmon/aux_info/eq_classes.txt 201511_Is3.salmon/aux_info/eq_classes.txt 201511_Mi1.salmon/aux_info/eq_classes.txt 201511_Mi2.salmon/aux_info/eq_classes.txt 201511_Mi3.salmon/aux_info/eq_classes.txt 201602_Is1.salmon/aux_info/eq_classes.txt 201602_Is2.salmon/aux_info/eq_classes.txt 201602_Is3.salmon/aux_info/eq_classes.txt 201602_Mi1.salmon/aux_info/eq_classes.txt 201602_Mi2.salmon/aux_info/eq_classes.txt 201602_Mi3.salmon/aux_info/eq_classes.txt 201603_Is1.salmon/aux_info/eq_classes.txt 201603_Is2.salmon/aux_info/eq_classes.txt 201603_Is3.salmon/aux_info/eq_classes.txt 201603_Mi1.salmon/aux_info/eq_classes.txt 201603_Mi2.salmon/aux_info/eq_classes.txt 201603_Mi3.salmon/aux_info/eq_classes.txt 201605_Is1.salmon/aux_info/eq_classes.txt 201605_Is2.salmon/aux_info/eq_classes.txt 201605_Is3.salmon/aux_info/eq_classes.txt 201605_Mi1.salmon/aux_info/eq_classes.txt 201605_Mi2.salmon/aux_info/eq_classes.txt 201605_Mi3.salmon/aux_info/eq_classes.txt 201608_Is1.salmon/aux_info/eq_classes.txt 201608_Is2.salmon/aux_info/eq_classes.txt 201608_Is3.salmon/aux_info/eq_classes.txt 201608_Mi1.salmon/aux_info/eq_classes.txt 201608_Mi2.salmon/aux_info/eq_classes.txt 201608_Mi3.salmon/aux_info/eq_classes.txt 201609_Is1.salmon/aux_info/eq_classes.txt 201609_Is2.salmon/aux_info/eq_classes.txt 201609_Is3.salmon/aux_info/eq_classes.txt
+
+Calculate expression level
+----------------------------------------------
+Gene expression level was estimated with by RSEM.
+
+.. code-block:: bash
+
+   # Create index
+   rsem-prepare-reference \
+      --num-threads 1 \
+      --transcript-to-gene-map corset-clusters.txt \
+      --bowtie --bowtie-path ${bowtie} \
+      ${output}/transcripts.zooxanthellae.fasta \
+      ${rsem_reference}
+
+   # Gene expression profiling
+   rsem \
+      --num-threads 1 \
+      --bowtie-path ${bowtie} \
+      --paired-end ${indir2}/${prefix}.Acropora_tenuis_UT.unmapped.R1.fastq ${indir2}/${prefix}.Acropora_tenuis_UT.unmapped.R2.fastq
+      ${rsem_reference} \
+      ${prefix}.corset_salmon 
+
+---------------------------------
+Gene annotation
+---------------------------------
+
+KAAS
+---------------------------------
+Gene annotation with KEGG database was performed by KEGG Automatic Annotation Server (https://www.genome.jp/tools/kaas/).
+
+
+SwissProt
+---------------------------------
+1. **Create ID mapping file**
+
+   .. code-block:: bash
+
+      wget ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz
+      gunzip ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz
+      cat idmapping_selected.tab | awk '{split($0,a,"\t"); print(a[1]"\t"a[7])}' > tmp
+      grep -v $'\t$' tmp > Uniprot2GO.txt
+      rm tmp
+
+2. **BLAST**
+
+   .. code-block:: bash
+
+      # BLASTp similarity search with Swissprot
+      blastp \
+         -query ${input} \
+         -db ${db} \
+         -out ${input}.swissprot_blastp.txt \
+         -outfmt 6 \
+         -num_threads 10
+
+3. **Parse results**
+
+   .. code-block:: bash
+
+      python parse_swissprot.py \
+         -i ${input}.swissprot_blastp.txt \
+         -o ${input}.swissprot_blastp.parse.txt \
+         -threshold 1e-5
+
+   .. code-block:: python
+      
+      # parse_swissprot.py
+      import os
+      import sys
+      import argparse
+      
+      parser = argparse.ArgumentParser()
+      parser.add_argument("-i",dest="ifile",action="store",default="",help="Path of input file")
+      parser.add_argument("-o",dest="ofile",action="store",default="",help="Path of output file")
+      parser.add_argument("-threshold",dest="threshold",action="store",default=1e-5,type=float,help="e-value, threshold")
+      parser.add_argument("-threshold_col",dest="threshold_col",action="store",default=11,type=int,help="e-value, threshold_col")
+      args = parser.parse_args()
+      
+      id2go = dict()
+      file = "/archive/data/hgc0934/toru/CREST/Transcriptome.2020/DB/Uniprot/Uniprot2GO.txt"
+      fi = open(file)
+      for ii,jj in enumerate(fi):
+               data = jj.strip("\n").split("\t")
+               go = data[1]
+               id2go[data[0]] = go
+      
+      id = ""
+      ids = []
+      id2hit = dict()
+      index = args.threshold_col - 1
+      with open(args.ifile) as fi:
+         for ii,jj in enumerate(fi):
+               data = jj.strip("\n").split("\t")
+               if id != data[0]:
+                  evalue = data[index]
+                  if float(evalue) <= args.threshold:
+                     uid = data[1].split("|")[1]
+                     if uid in id2go:
+                        ids.append(data[0])
+                        id2hit[data[0]] = [uid, evalue, id2go[uid]]
+                     else:
+                        ids.append(data[0])
+                        id2hit[data[0]] = [uid, evalue, ""]
+                  id = data[0]
+      
+      with open(args.ofile,"w") as fo:
+         for id in ids:
+            fo.write(id + "\t" + "\t".join(id2hit[id]) + "\n")
+      fo.close()      
+
+NCBI nr
+---------------------------------
+Similarity search against NCBI nr was performed to assign taxonomy and discriminate transcripts from coral & zooxanthellae. All scripts used in this step can be downloaded from https://github.com/tmaruy/blast2taxonomy.
+
+1. **Preparation of DB**
+   
+   .. code-block:: bash
+
+      git clone https://github.com/tmaruy/blast2taxonomy.git
+      chmod +x preprare_taxdb.sh
+      ./prepare_taxdb.sh
+
+2. **Similarity search with Diamond**
+
+   .. code-block:: bash
+
+      diamond blastx \
+         -q ${input} \
+         -d ${db} \
+         -o ${input}.nr_diamond.txt \
+         -f 6 \
+         -p 8
+
+3. **Parse results**
+   
+   python parse_nr.py \
+      -i ${input}.nr_diamond.txt \
+      -o ${input}.nr_diamond.parse.txt \
+      -threshold 1e-5
+
+---------------------------------
+Downstream analysis
+---------------------------------
+
+Basic analysis
+---------------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   RNAseq/Contig_taxonomy
+   RNAseq/Mapping_rate
+   RNAseq/Correlation
+
+Co-expression network analysis
+---------------------------------
+Gene co-expression newtork was constructed with coral and zooxanthellae transcriptome respectively by an R package WGCNA. 
+
+.. toctree::
+   :maxdepth: 1
+
+   RNAseq/WGCNA_power_estimation
+   RNAseq/WGCNA_module_detection
+   RNAseq/WGCNA_module_eigengenes
+   RNAseq/WGCNA_module_eigengene_environment
+   RNAseq/CrossSpeciesNetwork
+   RNAseq/GeneSetAnalysis
+
+Differential expression analysis
+---------------------------------
+Identification of genes differentially expressed in the colonies harboring Endozoicomonas
+
+.. toctree::
+   :maxdepth: 1
+
+
+

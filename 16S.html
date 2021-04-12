@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>16S rRNA amplicon-seq analysis &mdash; Coral multi-omics 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/main.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Coral multi-omics 1.0 documentation" href="index.html"/>
+        <link rel="next" title="Bacterial composition" href="16S/BacterialComposition.html"/>
+        <link rel="prev" title="Multi-omics analysis of coral holobiont" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Coral multi-omics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">16S rRNA amplicon-seq analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preprocessing">Preprocessing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rename-sequence-ids">Rename sequence IDs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trim-primer-sequences">Trim primer sequences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quality-filtering-truncation">Quality filtering &amp; Truncation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#otu-clustering">OTU clustering</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#uparse">UPARSE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#taxonomic-classification">Taxonomic classification</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#phylogenetic-tree-construction">Phylogenetic tree construction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#add-outgroup-sequence">Add outgroup sequence</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-alignment">Multiple alignment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tree-construction">Tree construction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#downstream-analysis">Downstream analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="16S/BacterialComposition.html">Bacterial composition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="16S/UniFrac.html">UniFrac analysis</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="RNAseq.html">Transcriptome analysis of coral &amp; zooxanthellae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Genome.html">Genome analysis of Endozoicomonas species</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Software.html">Software</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Coral multi-omics</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>16S rRNA amplicon-seq analysis</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/16S.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="s-rrna-amplicon-seq-analysis">
+<h1>16S rRNA amplicon-seq analysis<a class="headerlink" href="#s-rrna-amplicon-seq-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="preprocessing">
+<h2>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="rename-sequence-ids">
+<h3>Rename sequence IDs<a class="headerlink" href="#rename-sequence-ids" title="Permalink to this headline">¶</a></h3>
+<p>Sequence ID in FASTQ files were renamed by USEARCH.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>usearch <span class="se">\</span>
+   -fastx_relabel <span class="si">${</span><span class="nv">indir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">file</span><span class="si">}</span>.fastq <span class="se">\</span>
+   -prefix <span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>. <span class="se">\</span>
+   -fastqout <span class="si">${</span><span class="nv">outdir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>_raw.fastq
+</pre></div>
+</div>
+</div>
+<div class="section" id="trim-primer-sequences">
+<h3>Trim primer sequences<a class="headerlink" href="#trim-primer-sequences" title="Permalink to this headline">¶</a></h3>
+<p>Primer sequence were trimmed by using TagCleaner.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># Trim primer sequences</span>
+<span class="nv">forward</span><span class="o">=</span>AGAGTTTGATCMTGGCTCAG
+<span class="nv">reverse</span><span class="o">=</span>ACTCCTACGGGAGGCAGCA
+<span class="si">${</span><span class="nv">tagcleaner</span><span class="si">}</span> <span class="se">\</span>
+   -fastq <span class="si">${</span><span class="nv">indir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">file</span><span class="si">}</span>.fastq <span class="se">\</span>
+   -out <span class="si">${</span><span class="nv">outdir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>_trimmed <span class="se">\</span>
+   -out_format <span class="m">3</span> <span class="se">\ </span><span class="c1"># Return fastq file</span>
+   -nomatch <span class="m">3</span> <span class="se">\ </span><span class="c1"># Exclude reads not matching the tag at either end</span>
+   -tag5 <span class="si">${</span><span class="nv">forward</span><span class="si">}</span> -tag3 <span class="si">${</span><span class="nv">reverse</span><span class="si">}</span> <span class="se">\</span>
+   -minlen 200
+</pre></div>
+</div>
+</div>
+<div class="section" id="quality-filtering-truncation">
+<h3>Quality filtering &amp; Truncation<a class="headerlink" href="#quality-filtering-truncation" title="Permalink to this headline">¶</a></h3>
+<p>All sequences were truncated into 270 bp as required by UPARSE.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># Check length distribution</span>
+<span class="si">${</span><span class="nv">usearch</span><span class="si">}</span> <span class="se">\</span>
+   -fastq_eestats2 <span class="si">${</span><span class="nv">outdir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>_trimmed.fastq <span class="se">\</span>
+   -output <span class="si">${</span><span class="nv">outdir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>.eestats <span class="se">\</span>
+   -length_cutoffs 200,300,10 <span class="se">\</span>
+   -fastq_qmax 47
+
+<span class="c1"># Quality filter &amp; sequence truncation</span>
+<span class="si">${</span><span class="nv">usearch</span><span class="si">}</span> <span class="se">\</span>
+   -fastq_filter <span class="si">${</span><span class="nv">outdir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>_trimmed.fastq <span class="se">\</span>
+   -fastq_maxee_rate 0.01 <span class="se">\</span>
+   -fastaout <span class="si">${</span><span class="nv">outdir</span><span class="si">}</span>/<span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>.fasta <span class="se">\</span>
+   -fastq_maxns <span class="m">0</span> <span class="se">\</span>
+   -relabel <span class="si">${</span><span class="nv">prefix</span><span class="si">}</span>. <span class="se">\</span>
+   -fastq_trunclen <span class="m">270</span> <span class="se">\</span>
+   -fastq_qmax 47
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="otu-clustering">
+<h2>OTU clustering<a class="headerlink" href="#otu-clustering" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="uparse">
+<h3>UPARSE<a class="headerlink" href="#uparse" title="Permalink to this headline">¶</a></h3>
+<p>OTU clustering using UPARSE algorithm</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># Merge all FASTA files</span>
+cat <span class="si">${</span><span class="nv">indir</span><span class="si">}</span>/*fasta &gt; filtered.fa
+
+<span class="c1"># Dereplication</span>
+usearch <span class="se">\</span>
+   -fastx_uniques filtered.fa <span class="se">\</span>
+   -sizeout <span class="se">\</span>
+   -relabel Uniq <span class="se">\</span>
+   -fastaout uniques.fa
+
+<span class="c1"># OTU clustering</span>
+usearch <span class="se">\</span>
+   -cluster_otus uniques.fa <span class="se">\</span>
+   -otus otus.fa <span class="se">\</span>
+   -relabel OTU
+
+<span class="c1"># Remapping</span>
+usearch <span class="se">\</span>
+   -otutab raw.fq <span class="se">\</span>
+   -otus otus.fa <span class="se">\</span>
+   -otutabout otutab.txt <span class="se">\</span>
+   -mapout map.txt
+
+<span class="c1"># Create OTU table</span>
+usearch <span class="se">\</span>
+   -otutab filtered.fa <span class="se">\</span>
+   -otus otus.fa <span class="se">\</span>
+   -otutabout otutab.qced_read_only.txt <span class="se">\</span>
+   -mapout map.qced_read_only.txt
+</pre></div>
+</div>
+</div>
+<div class="section" id="taxonomic-classification">
+<h3>Taxonomic classification<a class="headerlink" href="#taxonomic-classification" title="Permalink to this headline">¶</a></h3>
+<p>Assign taxonomy to the OTU with RDP classifier &amp; USEARCH global alignment against SILVA database</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># RDP classifier</span>
+<span class="nv">classifier</span><span class="o">=</span>/home/toru/bin/rdp_classifier_2.10.1/dist/classifier.jar
+java -Xmx1g -jar <span class="se">\</span>
+   <span class="si">${</span><span class="nv">classifier</span><span class="si">}</span> classify <span class="se">\</span>
+   -c 0.8 <span class="se">\</span>
+   -o otus.RDPclassifier.txt <span class="se">\</span>
+   otus.fa
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="phylogenetic-tree-construction">
+<h2>Phylogenetic tree construction<a class="headerlink" href="#phylogenetic-tree-construction" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="add-outgroup-sequence">
+<h3>Add outgroup sequence<a class="headerlink" href="#add-outgroup-sequence" title="Permalink to this headline">¶</a></h3>
+<p>Added archeal 16S sequence as outgroup to determine root of the phylogenetic tree</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="nv">outgroup</span><span class="o">=</span>/home/toru/Database/archaea_16S_outgroup.fasta
+cat $outgroup otus.fa &gt; otus.outgroup.fa
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiple-alignment">
+<h3>Multiple alignment<a class="headerlink" href="#multiple-alignment" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>mafft otus.outgroup.fa &gt; otus.outgroup.mafft.fa
+</pre></div>
+</div>
+</div>
+<div class="section" id="tree-construction">
+<h3>Tree construction<a class="headerlink" href="#tree-construction" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>FastTree -gtr -nt otus.outgroup.mafft.fa &gt; otus.outgroup.mafft.FastTree.tre
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="downstream-analysis">
+<h2>Downstream analysis<a class="headerlink" href="#downstream-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="16S/BacterialComposition.html">Bacterial composition</a></li>
+<li class="toctree-l1"><a class="reference internal" href="16S/UniFrac.html">UniFrac analysis</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="16S/BacterialComposition.html" class="btn btn-neutral float-right" title="Bacterial composition" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Multi-omics analysis of coral holobiont" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Toru Maruyama.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

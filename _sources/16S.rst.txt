@@ -1,0 +1,151 @@
+=============================================
+16S rRNA amplicon-seq analysis
+=============================================
+
+---------------------------------
+Preprocessing
+---------------------------------
+
+Rename sequence IDs
+---------------------------------
+Sequence ID in FASTQ files were renamed by USEARCH.
+
+.. code-block:: bash
+
+   usearch \
+      -fastx_relabel ${indir}/${file}.fastq \
+      -prefix ${prefix}. \
+      -fastqout ${outdir}/${prefix}_raw.fastq 
+
+Trim primer sequences
+---------------------------------
+Primer sequence were trimmed by using TagCleaner.
+
+.. code-block:: bash
+
+   # Trim primer sequences
+   forward=AGAGTTTGATCMTGGCTCAG
+   reverse=ACTCCTACGGGAGGCAGCA
+   ${tagcleaner} \
+      -fastq ${indir}/${file}.fastq \
+      -out ${outdir}/${prefix}_trimmed \
+      -out_format 3 \ # Return fastq file
+      -nomatch 3 \ # Exclude reads not matching the tag at either end
+      -tag5 ${forward} -tag3 ${reverse} \
+      -minlen 200 
+
+Quality filtering & Truncation
+---------------------------------
+All sequences were truncated into 270 bp as required by UPARSE.
+
+.. code-block:: bash
+
+   # Check length distribution
+   ${usearch} \
+      -fastq_eestats2 ${outdir}/${prefix}_trimmed.fastq \
+      -output ${outdir}/${prefix}.eestats \
+      -length_cutoffs 200,300,10 \
+      -fastq_qmax 47
+
+   # Quality filter & sequence truncation
+   ${usearch} \
+      -fastq_filter ${outdir}/${prefix}_trimmed.fastq \
+      -fastq_maxee_rate 0.01 \
+      -fastaout ${outdir}/${prefix}.fasta \
+      -fastq_maxns 0 \
+      -relabel ${prefix}. \
+      -fastq_trunclen 270 \
+      -fastq_qmax 47
+
+---------------------------------
+OTU clustering
+---------------------------------
+
+UPARSE
+---------------------------------
+OTU clustering using UPARSE algorithm
+
+.. code-block:: bash
+
+   # Merge all FASTA files
+   cat ${indir}/*fasta > filtered.fa
+
+   # Dereplication
+   usearch \
+      -fastx_uniques filtered.fa \
+      -sizeout \
+      -relabel Uniq \
+      -fastaout uniques.fa
+
+   # OTU clustering
+   usearch \
+      -cluster_otus uniques.fa \
+      -otus otus.fa \
+      -relabel OTU
+
+   # Remapping 
+   usearch \
+      -otutab raw.fq \
+      -otus otus.fa \
+      -otutabout otutab.txt \
+      -mapout map.txt
+
+   # Create OTU table
+   usearch \
+      -otutab filtered.fa \
+      -otus otus.fa \
+      -otutabout otutab.qced_read_only.txt \
+      -mapout map.qced_read_only.txt
+
+Taxonomic classification
+---------------------------------
+
+Assign taxonomy to the OTU with RDP classifier & USEARCH global alignment against SILVA database
+
+.. code-block:: bash
+
+   # RDP classifier
+   classifier=/home/toru/bin/rdp_classifier_2.10.1/dist/classifier.jar
+   java -Xmx1g -jar \
+      ${classifier} classify \
+      -c 0.8 \
+      -o otus.RDPclassifier.txt \
+      otus.fa
+
+---------------------------------
+Phylogenetic tree construction
+---------------------------------
+
+Add outgroup sequence
+---------------------------------
+
+Added archeal 16S sequence as outgroup to determine root of the phylogenetic tree
+
+.. code-block:: bash
+
+   outgroup=/home/toru/Database/archaea_16S_outgroup.fasta
+   cat $outgroup otus.fa > otus.outgroup.fa
+
+Multiple alignment
+---------------------------------
+
+.. code-block:: bash
+   
+   mafft otus.outgroup.fa > otus.outgroup.mafft.fa
+
+Tree construction
+---------------------------------
+
+.. code-block:: bash
+   
+   FastTree -gtr -nt otus.outgroup.mafft.fa > otus.outgroup.mafft.FastTree.tre
+
+---------------------------------
+Downstream analysis
+---------------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   16S/BacterialComposition
+   16S/UniFrac
