@@ -351,5 +351,8 @@ Identification of genes differentially expressed in the colonies harboring Endoz
 .. toctree::
    :maxdepth: 1
 
+   RNAseq/Differential_expression_analysis
+
+
 
 

@@ -34,8 +34,8 @@
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="Coral multi-omics 1.0 documentation" href="index.html"/>
-        <link rel="next" title="Software" href="Software.html"/>
-        <link rel="prev" title="Gene set analysis for the WGCNA modules" href="RNAseq/GeneSetAnalysis.html"/> 
+        <link rel="next" title="Locally colinear blocks" href="Genome/LCB.html"/>
+        <link rel="prev" title="Differential expression analysis" href="RNAseq/Differential_expression_analysis.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -90,6 +90,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Genome analysis of Endozoicomonas species</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#genome-assembly-of-otu5">Genome assembly of OTU5</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#preprocessing">Preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#de-novo-assembly">De novo assembly</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#gene-annotation">Gene annotation</a><ul>
@@ -103,7 +104,10 @@
 <li class="toctree-l3"><a class="reference internal" href="#genome-alignment">Genome alignment</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#downstream-analysis">Downstream analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#downstream-analysis">Downstream analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="Genome/LCB.html">Locally colinear blocks</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Software.html">Software</a></li>
@@ -157,7 +161,28 @@
 <h2>Genome assembly of OTU5<a class="headerlink" href="#genome-assembly-of-otu5" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="preprocessing">
 <h3>Preprocessing<a class="headerlink" href="#preprocessing" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre>
+<p>Read preprocessing was conducted by fastp</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>fastp <span class="se">\</span>
+   -i <span class="si">${</span><span class="nv">READ1</span><span class="si">}</span>.fastq <span class="se">\</span>
+   -I <span class="si">${</span><span class="nv">READ2</span><span class="si">}</span>.fastq <span class="se">\</span>
+   -w <span class="m">20</span> <span class="se">\</span>
+   -h <span class="si">${</span><span class="nv">report</span><span class="si">}</span>.html <span class="se">\</span>
+   -j <span class="si">${</span><span class="nv">report</span><span class="si">}</span>.json <span class="se">\</span>
+   -o <span class="si">${</span><span class="nv">READ1</span><span class="si">}</span>.QC.fastq <span class="se">\</span>
+   -O <span class="si">${</span><span class="nv">READ2</span><span class="si">}</span>.QC.fastq
+</pre></div>
+</div>
+</div>
+<div class="section" id="de-novo-assembly">
+<h3>De novo assembly<a class="headerlink" href="#de-novo-assembly" title="Permalink to this headline">¶</a></h3>
+<p>De novo assembly was performed by SPAdes</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>spades.py <span class="se">\</span>
+   -1 <span class="si">${</span><span class="nv">READ1</span><span class="si">}</span>.QC.fastq <span class="se">\</span>
+   -2 <span class="si">${</span><span class="nv">READ2</span><span class="si">}</span>.QC.fastq <span class="se">\</span>
+   -k auto <span class="se">\</span>
+   --careful <span class="se">\</span>
+   -t <span class="m">20</span> <span class="se">\</span>
+   -o assembly_results
 </pre></div>
 </div>
 </div>
@@ -167,7 +192,16 @@
 <div class="section" id="gene-prediction">
 <h3>Gene prediction<a class="headerlink" href="#gene-prediction" title="Permalink to this headline">¶</a></h3>
 <p>CDS regions were predicted from the genome sequences by Prokka.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>prokka <span class="se">\</span>
+   --outdir ../Prokka/<span class="si">${</span><span class="nv">id</span><span class="si">}</span>_prokka <span class="se">\</span>
+   --kingdom Bacteria <span class="se">\</span>
+   --gcode <span class="m">11</span> <span class="se">\</span>
+   --gram neg <span class="se">\</span>
+   --cpus <span class="m">20</span> <span class="se">\</span>
+   --centre X <span class="se">\</span>
+   --compliant <span class="se">\</span>
+   --prefix <span class="si">${</span><span class="nv">id</span><span class="si">}</span>_prokka <span class="se">\</span>
+   --addgenes <span class="si">${</span><span class="nv">id</span><span class="si">}</span>
 </pre></div>
 </div>
 </div>
@@ -241,6 +275,11 @@ chmod +x preprare_taxdb.sh
 </div>
 <div class="section" id="downstream-analysis">
 <h2>Downstream analysis<a class="headerlink" href="#downstream-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Genome/LCB.html">Locally colinear blocks</a></li>
+</ul>
+</div>
 </div>
 </div>
 
@@ -251,10 +290,10 @@ chmod +x preprare_taxdb.sh
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Software.html" class="btn btn-neutral float-right" title="Software" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="Genome/LCB.html" class="btn btn-neutral float-right" title="Locally colinear blocks" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="RNAseq/GeneSetAnalysis.html" class="btn btn-neutral" title="Gene set analysis for the WGCNA modules" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="RNAseq/Differential_expression_analysis.html" class="btn btn-neutral" title="Differential expression analysis" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -8,8 +8,32 @@ Genome assembly of OTU5
 
 Preprocessing
 ---------------------------------
+Read preprocessing was conducted by fastp
 
 .. code-block:: bash
+
+      fastp \
+         -i ${READ1}.fastq \ 
+         -I ${READ2}.fastq \
+         -w 20 \
+         -h ${report}.html \
+         -j ${report}.json \
+         -o ${READ1}.QC.fastq \
+         -O ${READ2}.QC.fastq
+
+De novo assembly
+----------------------------------
+De novo assembly was performed by SPAdes
+
+.. code-block:: bash
+
+   spades.py \
+      -1 ${READ1}.QC.fastq \
+      -2 ${READ2}.QC.fastq \
+      -k auto \
+      --careful \
+      -t 20 \
+      -o assembly_results   
 
 ---------------------------------
 Gene annotation
@@ -20,6 +44,17 @@ Gene prediction
 CDS regions were predicted from the genome sequences by Prokka. 
 
 .. code-block:: bash
+
+   prokka \
+      --outdir ../Prokka/${id}_prokka \
+      --kingdom Bacteria \
+      --gcode 11 \
+      --gram neg \
+      --cpus 20 \
+      --centre X \
+      --compliant \
+      --prefix ${id}_prokka \
+      --addgenes ${id}
 
 KAAS
 ---------------------------------
@@ -92,6 +127,12 @@ Genome alignment was performed by progressiveMauve
       ${indir}/Endozoicomonas_numazuensis_DSM_25634.fasta_prokka.fna \
       ${indir}/Endozoicomonas_sp_OPT23.fasta_prokka.fna 
 
+
 ---------------------------------
 Downstream analysis
 ---------------------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   Genome/LCB

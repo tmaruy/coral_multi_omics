@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Network analysis &mdash; Coral multi-omics 1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/main.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Coral multi-omics 1.0 documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Coral multi-omics
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="16S.html">16S rRNA amplicon-seq analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RNAseq.html">Transcriptome analysis of coral &amp; zooxanthellae</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Genome.html">Genome analysis of Endozoicomonas species</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Software.html">Software</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Coral multi-omics</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Network analysis</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/Network analysis.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="network-analysis">
+<h1>Network analysis<a class="headerlink" href="#network-analysis" title="Permalink to this headline">¶</a></h1>
+<p>Gene modules associated with disease risk are determined by combination of gene co-expression network and GWA study findings</p>
+<video controls width=100% height=auto poster="_static/Flow_chart.png">
+<source src="_static/Flow_chart.mp4" type="video/mp4" />
+</video><p><em>Movie: Flow chart of the network analysis</em></p>
+<div class="section" id="gene-network-analysis">
+<h2>Gene network analysis<a class="headerlink" href="#gene-network-analysis" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><strong>Weighted gene co-expression network analysis</strong></li>
+<li><strong>Scoring reproducibility of gene modules</strong></li>
+</ol>
+<blockquote>
+<div><p>Gene co-expression network was constructed with EBB dataset, a (closed) transcriptomic dataset acquired from postmortal human hippocampus. Gene modules were defined from the co-expression network.</p>
+<p>Reproducibility of the modules were evaluated by using Braineac <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/25174004">(Ramasamy et al.)</a> dataset, another human hippocampal transcriptome dataset. An indicator of module reproducibility, Zsummary <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/21283776">(Langfelder et al.)</a> , was utilized for the evaluation.</p>
+<p>All these analyses were performed with an R package WGCNA <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/19114008">(Langfelder et al.)</a> .
+EBB transcriptome dataset is not opened. Please contact us if you prefer collaboration with us.</p>
+</div></blockquote>
+<div class="section" id="source-code">
+<h3>Source code<a class="headerlink" href="#source-code" title="Permalink to this headline">¶</a></h3>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="datasets">
+<h3>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a href="#id1"><span class="problematic" id="id2">:strike:`Datasets:`</span></a> (Not opened)</li>
+</ul>
+</div>
+</div>
+<div class="section" id="annoatation-of-gene-modules">
+<h2>Annoatation of gene modules<a class="headerlink" href="#annoatation-of-gene-modules" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple" start="3">
+<li><strong>Gene set analysis</strong></li>
+<li><strong>Identification of AD-associated modules</strong></li>
+<li><strong>Network visualization</strong></li>
+</ol>
+<blockquote>
+<div><p>Gene set analysis (GSA) was performed on the gene modules. Enrichment of four gene sets (Gene ontology, KEGG Pathway, Disease risk genes and Celltype-specific genes) were evaluated through Fisher’s exact test.</p>
+<p>Six modules were identified as “AD-associated modules” because of their high reproducibilities (Zsummary score) and significant AD gene enrichments.</p>
+<p>The six modules showed associations with different functional gene sets, celltypes and diseases.</p>
+</div></blockquote>
+<div class="section" id="id3">
+<h3>Source code<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="id4">
+<h3>Datasets<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="_static/dataFig2.tar.gz">Datasets (input &amp; output)</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Toru Maruyama.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

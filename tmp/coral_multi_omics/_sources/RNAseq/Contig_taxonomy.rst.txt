@@ -1,0 +1,7 @@
+===============================================
+Taxonomic assignments of the contigs
+===============================================
+
+.. raw:: html
+   :file: ../_static/1_Contig_taxonomy.html
+

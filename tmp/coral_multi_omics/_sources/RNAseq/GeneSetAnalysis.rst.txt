@@ -1,0 +1,6 @@
+=============================================
+Gene set analysis for the WGCNA modules
+=============================================
+
+.. raw:: html
+   :file: ../_static/2.5_GeneSetAnalysis.UT.v2.html

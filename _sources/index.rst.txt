@@ -15,6 +15,6 @@ This study tried to infer their crosstalk by integrative analysis of multi-omics
    16S
    RNAseq
    Genome
-   Software
+   Data
 
 

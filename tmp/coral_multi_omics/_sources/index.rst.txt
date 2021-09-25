@@ -1,0 +1,20 @@
+=============================================
+Multi-omics analysis of coral holobiont
+=============================================
+
+Coral holobiont is an ecosystem composed of corals, intracellular algae (zooxanthellae) and resident bacteria.
+This study tried to infer their crosstalk by integrative analysis of multi-omics datasets.
+
+.. figure:: schematic_figs/holobiont.png
+   :scale: 40%
+   :align: center
+
+.. toctree::
+   :maxdepth: 2
+   
+   16S
+   RNAseq
+   Genome
+   Software
+
+
